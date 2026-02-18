@@ -1,0 +1,14 @@
+{
+  "name": "@elizaos/plugin-x402-root",
+  "version": "2.0.0-alpha.11",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "typescript"
+  ],
+  "scripts": {
+    "build": "bun run --cwd typescript build",
+    "test": "bun run --cwd typescript test",
+    "lint": "bun run --cwd typescript lint"
+  }
+}

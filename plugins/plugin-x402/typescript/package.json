@@ -1,0 +1,37 @@
+{
+  "name": "@elizaos/plugin-x402",
+  "version": "2.0.0-alpha.11",
+  "description": "x402 Solana payment verifier for Eliza routes",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "lint": "bunx @biomejs/biome check --write src",
+    "lint:check": "bunx @biomejs/biome check src"
+  },
+  "dependencies": {
+    "@elizaos/core": "2.0.0-alpha.11",
+    "@solana/web3.js": "^1.98.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}

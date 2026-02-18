@@ -14,6 +14,7 @@ export * from "./database/inMemoryAdapter";
 export * from "./entities";
 export * from "./logger";
 export * from "./memory";
+export * from "./payments/x402";
 export * from "./prompts";
 export * from "./request-context";
 export * from "./roles";
