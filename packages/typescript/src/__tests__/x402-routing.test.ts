@@ -73,6 +73,11 @@ describe("x402 route wrapper", () => {
   it("returns 402 when payment header is missing", async () => {
     const route = createMockRoute();
     const wrapped = wrapX402RouteHandler(route, route.handler!, runtime);
+    registerX402Verifier(runtime, {
+      async verify() {
+        return { ok: false, error: "missing payment" };
+      },
+    });
 
     const { response, state } = createMockResponse();
     await wrapped({ headers: {}, url: "/paid" }, response, runtime);
@@ -133,5 +138,42 @@ describe("x402 route wrapper", () => {
     expect(state.jsonBody).toMatchObject({
       code: "PAYMENT_SYSTEM_MISCONFIGURED",
     });
+  });
+
+  it("supports authenticated server-side payment path when no x-payment header", async () => {
+    const route = createMockRoute();
+    const wrapped = wrapX402RouteHandler(route, route.handler!, runtime);
+
+    registerX402Verifier(runtime, {
+      async verify() {
+        return { ok: false, error: "not used in this test" };
+      },
+      async verifyAuthenticatedPayment() {
+        return {
+          ok: true,
+          payer: "privy-user-wallet",
+          transaction: "server-charge-123",
+          receiptHeaders: {
+            "x-payment-receipt": "server-receipt",
+          },
+        };
+      },
+    });
+
+    const { response, state } = createMockResponse();
+    await wrapped(
+      {
+        headers: {
+          authorization: "Bearer test-token",
+        },
+        url: "/paid",
+      },
+      response,
+      runtime,
+    );
+
+    expect(state.statusCode).toBe(200);
+    expect(state.jsonBody).toEqual({ ok: true });
+    expect(state.headers["x-payment-receipt"]).toBe("server-receipt");
   });
 });

@@ -6,6 +6,10 @@ export interface X402PluginConfig {
   expectedPayTo?: string;
   requirePaymentHeader: boolean;
   paymentHeaderName: string;
+  enablePrivyServerPayments: boolean;
+  privyTrustedHeaders: boolean;
+  privyUserIdHeader: string;
+  privyWalletHeader: string;
 }
 
 export interface X402ConfigValidationResult {
@@ -30,6 +34,10 @@ export function resolveX402PluginConfig(
     expectedPayTo: env.X402_PAY_TO || env.X402_TREASURY_ADDRESS || "",
     requirePaymentHeader: env.X402_REQUIRE_HEADER !== "false",
     paymentHeaderName: env.X402_PAYMENT_HEADER_NAME || "x-payment",
+    enablePrivyServerPayments: env.X402_ENABLE_PRIVY_SERVER_PAYMENTS === "true",
+    privyTrustedHeaders: env.X402_PRIVY_TRUSTED_USER_HEADERS === "true",
+    privyUserIdHeader: env.X402_PRIVY_USER_ID_HEADER || "x-privy-user-id",
+    privyWalletHeader: env.X402_PRIVY_WALLET_HEADER || "x-privy-wallet-address",
   };
 }
 
@@ -46,6 +54,12 @@ export function validateX402PluginConfig(
   if (!config.expectedPayTo) {
     warnings.push(
       "X402_PAY_TO is not set; middleware will only validate the payment header shape",
+    );
+  }
+
+  if (config.enablePrivyServerPayments && !config.privyTrustedHeaders) {
+    warnings.push(
+      "Privy server payments enabled without trusted headers; provide a Privy adapter for production use",
     );
   }
 

@@ -28,4 +28,20 @@ describe("x402 plugin config", () => {
     expect(validation.valid).toBe(true);
     expect(validation.errors.length).toBe(0);
   });
+
+  it("warns when Privy mode enabled without trusted headers", () => {
+    const config = resolveX402PluginConfig({
+      X402_NETWORK: "solana",
+      X402_TREASURY_ADDRESS: "treasury-wallet",
+      X402_ENABLE_PRIVY_SERVER_PAYMENTS: "true",
+      X402_PRIVY_TRUSTED_USER_HEADERS: "false",
+    });
+    const validation = validateX402PluginConfig(config);
+    expect(validation.valid).toBe(true);
+    expect(
+      validation.warnings.some((warning) =>
+        warning.includes("Privy server payments enabled"),
+      ),
+    ).toBe(true);
+  });
 });

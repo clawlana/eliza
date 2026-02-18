@@ -5,10 +5,14 @@ import {
   validateX402PluginConfig,
   type X402PluginConfig,
 } from "./config.js";
-import { createSolanaX402Verifier } from "./solana.js";
+import {
+  createSolanaX402Verifier,
+  type PrivyAdapter,
+} from "./solana.js";
 
 interface BuildX402PluginOptions {
   config?: Partial<X402PluginConfig>;
+  privyAdapter?: PrivyAdapter;
 }
 
 function mergeConfig(
@@ -42,7 +46,9 @@ export function buildX402Plugin(options: BuildX402PluginOptions = {}): Plugin {
         );
       }
 
-      const verifier = createSolanaX402Verifier(effectiveConfig);
+      const verifier = createSolanaX402Verifier(effectiveConfig, {
+        privyAdapter: options.privyAdapter,
+      });
       registerX402Verifier(runtime, verifier);
 
       if (validation.warnings.length > 0) {

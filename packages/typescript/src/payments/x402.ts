@@ -12,6 +12,8 @@ export interface X402VerificationResult {
   payer?: string;
   transaction?: string;
   receiptHeaders?: Record<string, string>;
+  statusCode?: number;
+  responseBody?: Record<string, unknown>;
 }
 
 export interface X402VerificationContext {
@@ -22,8 +24,18 @@ export interface X402VerificationContext {
   paymentHeader: string;
 }
 
+export interface X402AuthenticatedContext {
+  req: RouteRequest;
+  route: Route;
+  runtime: IAgentRuntime;
+  accepts: X402Accepts;
+}
+
 export interface X402Verifier {
   verify(context: X402VerificationContext): Promise<X402VerificationResult>;
+  verifyAuthenticatedPayment?(
+    context: X402AuthenticatedContext,
+  ): Promise<X402VerificationResult>;
 }
 
 const verifierRegistry = new WeakMap<IAgentRuntime, X402Verifier>();
@@ -110,13 +122,8 @@ export function wrapX402RouteHandler(
   return async (req, res, handlerRuntime) => {
     const accepts = buildX402Accepts(route, req);
     const paymentHeader = getHeader(req, "x-payment");
-
-    if (!paymentHeader) {
-      writePaymentRequired(res, accepts);
-      return;
-    }
-
     const verifier = getX402Verifier(runtime);
+
     if (!verifier) {
       res.status(503).json({
         error: "x402 verifier not configured",
@@ -125,15 +132,34 @@ export function wrapX402RouteHandler(
       return;
     }
 
-    const result = await verifier.verify({
-      req,
-      route,
-      runtime: handlerRuntime,
-      accepts,
-      paymentHeader,
-    });
+    let result: X402VerificationResult;
+    if (paymentHeader) {
+      result = await verifier.verify({
+        req,
+        route,
+        runtime: handlerRuntime,
+        accepts,
+        paymentHeader,
+      });
+    } else if (verifier.verifyAuthenticatedPayment) {
+      result = await verifier.verifyAuthenticatedPayment({
+        req,
+        route,
+        runtime: handlerRuntime,
+        accepts,
+      });
+    } else {
+      writePaymentRequired(res, accepts);
+      return;
+    }
 
     if (!result.ok) {
+      if (result.statusCode && result.statusCode !== 402) {
+        res
+          .status(result.statusCode)
+          .json(result.responseBody || { error: result.error || "Payment failed" });
+        return;
+      }
       writePaymentRequired(res, accepts, result.error || "Payment verification failed");
       return;
     }

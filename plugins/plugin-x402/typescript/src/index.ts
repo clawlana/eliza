@@ -8,4 +8,9 @@ export {
   type X402PluginConfig,
   type X402ConfigValidationResult,
 } from "./config.js";
-export { createSolanaX402Verifier } from "./solana.js";
+export {
+  createSolanaX402Verifier,
+  type AuthenticatedUserContext,
+  type PrivyAdapter,
+  type PrivyServerChargeResult,
+} from "./solana.js";
