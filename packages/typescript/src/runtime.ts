@@ -118,6 +118,7 @@ import {
   trimTokens,
 } from "./utils";
 import { BufferUtils } from "./utils/buffer";
+import { wrapX402RouteHandler } from "./payments/x402";
 import { getNumberEnv } from "./utils/environment";
 import {
   ActionStreamFilter,
@@ -627,8 +628,13 @@ export class AgentRuntime implements IAgentRuntime {
         const routePath = route.path.startsWith("/")
           ? route.path
           : `/${route.path}`;
+        const wrappedHandler =
+          route.x402 && route.handler
+            ? wrapX402RouteHandler(route, route.handler, this as IAgentRuntime)
+            : route.handler;
         this.routes.push({
           ...route,
+          handler: wrappedHandler,
           path: `/${pluginToRegister.name}${routePath}`,
         });
       }
@@ -1783,9 +1789,6 @@ export class AgentRuntime implements IAgentRuntime {
             { src: "agent", agentId: this.agentId, action: responseAction },
             "Action not found",
           );
-
-          // Report a filter miss if the unresolved name was filtered out
-          this.checkFilterMiss(message.roomId, responseAction);
 
           if (actionPlan?.steps?.[actionIndex]) {
             actionPlan = this.updateActionStep(actionPlan, actionIndex, {

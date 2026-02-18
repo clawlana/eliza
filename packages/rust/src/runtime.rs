@@ -1823,6 +1823,12 @@ impl AgentRuntime {
                     .get("maxTokens")
                     .and_then(|v| v.as_i64())
                     .unwrap_or(0);
+                let logged_response = if effective_model_type.to_ascii_uppercase().contains("EMBEDDING")
+                {
+                    "[embedding vector]".to_string()
+                } else {
+                    response_text.chars().take(2000).collect::<String>()
+                };
 
                 let mut logs = self.trajectory_logs.lock().expect("lock poisoned");
                 let logged_response = if effective_model_type.contains("EMBEDDING") {

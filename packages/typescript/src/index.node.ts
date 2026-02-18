@@ -43,6 +43,7 @@ export * from "./markdown";
 export * from "./memory";
 // Export network utilities (SSRF protection, secure fetch)
 export * from "./network";
+export * from "./payments/x402";
 export * from "./plugin";
 // Export plugin discovery and manifest utilities
 export * from "./plugins";

@@ -1,6 +1,6 @@
 {
   "name": "@elizaos/daemon",
-  "version": "2.0.0-alpha.26",
+  "version": "2.0.0-alpha.11",
   "description": "Cross-platform daemon/service management for Eliza agents",
   "type": "module",
   "main": "dist/index.js",
@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run --config vitest.daemon.config.ts",
     "lint": "biome check --write --unsafe typescript/src",
     "lint:fix": "biome check --write typescript/src"
   },
