@@ -10,6 +10,7 @@ export {
 } from "./config.js";
 export {
   createSolanaX402Verifier,
+  createPrivySdkAdapter,
   type AuthenticatedUserContext,
   type PrivyAdapter,
   type PrivyServerChargeResult,

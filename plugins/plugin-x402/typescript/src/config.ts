@@ -7,9 +7,15 @@ export interface X402PluginConfig {
   requirePaymentHeader: boolean;
   paymentHeaderName: string;
   enablePrivyServerPayments: boolean;
+  usePrivySdk: boolean;
   privyTrustedHeaders: boolean;
   privyUserIdHeader: string;
   privyWalletHeader: string;
+  privyWalletIdHeader: string;
+  privyAppId: string;
+  privyAppSecret: string;
+  privyAuthorizationKey?: string;
+  privySolanaCaip2: string;
 }
 
 export interface X402ConfigValidationResult {
@@ -35,9 +41,15 @@ export function resolveX402PluginConfig(
     requirePaymentHeader: env.X402_REQUIRE_HEADER !== "false",
     paymentHeaderName: env.X402_PAYMENT_HEADER_NAME || "x-payment",
     enablePrivyServerPayments: env.X402_ENABLE_PRIVY_SERVER_PAYMENTS === "true",
+    usePrivySdk: env.X402_USE_PRIVY_SDK !== "false",
     privyTrustedHeaders: env.X402_PRIVY_TRUSTED_USER_HEADERS === "true",
     privyUserIdHeader: env.X402_PRIVY_USER_ID_HEADER || "x-privy-user-id",
     privyWalletHeader: env.X402_PRIVY_WALLET_HEADER || "x-privy-wallet-address",
+    privyWalletIdHeader: env.X402_PRIVY_WALLET_ID_HEADER || "x-privy-wallet-id",
+    privyAppId: env.PRIVY_APP_ID || "",
+    privyAppSecret: env.PRIVY_APP_SECRET || "",
+    privyAuthorizationKey: env.PRIVY_AUTHORIZATION_KEY,
+    privySolanaCaip2: env.X402_PRIVY_SOLANA_CAIP2 || "solana:mainnet",
   };
 }
 
@@ -60,6 +72,16 @@ export function validateX402PluginConfig(
   if (config.enablePrivyServerPayments && !config.privyTrustedHeaders) {
     warnings.push(
       "Privy server payments enabled without trusted headers; provide a Privy adapter for production use",
+    );
+  }
+
+  if (
+    config.enablePrivyServerPayments &&
+    config.usePrivySdk &&
+    (!config.privyAppId || !config.privyAppSecret)
+  ) {
+    warnings.push(
+      "Privy SDK mode enabled but PRIVY_APP_ID/PRIVY_APP_SECRET are missing; set them or disable X402_USE_PRIVY_SDK",
     );
   }
 
